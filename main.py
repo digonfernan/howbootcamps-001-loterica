@@ -1,26 +1,38 @@
 # Objetivo
-# O objetivo deste estudo é abordar conceitos de coleta de dados, análisar informações e explorar os resultados.
+# O objetivo deste estudo é abordar conceitos de coleta de dados, análisar informações e explorar os resultados do soterio Lotofácil da Caixa Econômica Federal.
 
 # Imports
-# !pip install lxml
 import requests
 import pandas as pd
-import lxml
+import collections
+import sys
 
 # Request da URL
 url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/resultados?modalidade=Lotof%C3%A1cil'
+#url = sys.argv[1]
 # Cria variável de reposta
 r = requests.get(url, verify=False)
 r # Verifica a resposta
 #r.text # Verifica o que foi gravado na variável
-r_text = r.text # Cria uma variável nova para facilitar futuras capturas
+r_text = r.text.replace('\\r\\n', '') # Cria uma variável nova com remoção de alguns caracteres
+r_text = r.text.replace('"\r\n}', '')
+r_text = r.text.replace('{\r\n', '')
+
 
 # Criação do dataframe
 df = pd.read_html(r_text) # Grava a variável em um dataframe
 type(df) # Verifica o que foi gravado
 df[0] # É possível verificar que na linha acima foi gerado uma lista, sendo necessário extrair a informação desejada que está na primeira posição
 type (df[0]) # Verifica o que foi gravado
-df = df[0].copy # Reescreve o dataframe com a informação necessária
+df = df[0].copy() # Reescreve o dataframe com a informação necessária
+df # Verifica o que foi gravado
+
+# Tratamento das colunas e remoção de valores nulos
+new_columns = df.columns # Cria nova variável para tratamento dos caracteres das colunas
+new_columns = list(i.replace('\\r\\n', '') for i in new_columns)
+new_columns
+df.columns = new_columns
+df = df.dropna(axis=0) # Remoção dos valores nulos
 df # Verifica o que foi gravado
 
 # Criação das variáveis conforme constante da Lotofácil
@@ -60,8 +72,8 @@ v_25 = 0
 
 # Cria lista de apoio conforme tabela original
 lst_campos = ['Bola1', 'Bola2', 'Bola3', 'Bola4', 'Bola5',
-'Bola6', 'Bola7', 'Bola8', 'Bola9', 'Bola10', 'Bola11', 'Bola12',
-'Bola13', 'Bola14', 'Bola15']
+              'Bola6', 'Bola7', 'Bola8', 'Bola9', 'Bola10', 'Bola11', 'Bola12',
+              'Bola13', 'Bola14', 'Bola15']
 
 # Loop para percorrer o dataframe e contar os resultados
 for index, row in df.iterrows():
@@ -88,7 +100,7 @@ for index, row in df.iterrows():
         if row[campo] == 6:
             v_06 += 1
         if row[campo] == 7:
-             v_07 += 1
+            v_07 += 1
         if row[campo] == 8:
             v_08 += 1
         if row[campo] == 9:
@@ -100,7 +112,7 @@ for index, row in df.iterrows():
         if row[campo] == 12:
             v_12 += 1
         if row[campo] == 13:
-             v_13 += 1
+            v_13 += 1
         if row[campo] == 14:
             v_14 += 1
         if row[campo] == 15:
@@ -118,11 +130,60 @@ for index, row in df.iterrows():
         if row[campo] == 21:
             v_21 += 1
         if row[campo] == 22:
-             v_22 += 1
+            v_22 += 1
         if row[campo] == 23:
-             v_23 += 1
+            v_23 += 1
         if row[campo] == 24:
-             v_24 += 1
+            v_24 += 1
         if row[campo] == 25:
-             v_25 += 1
+            v_25 += 1
     comb.append(str(v_pares) + 'p-' + str(v_impares) + 'i-'+str(v_primos)+'np')
+
+# Cria lista de frequência dos números
+freq_nr = [
+    [1, v_01],
+    [2, v_02],
+    [3, v_03],
+    [4, v_04],
+    [5, v_05],
+    [6, v_06],
+    [7, v_07],
+    [8, v_08],
+    [9, v_09],
+    [10, v_10],
+    [11, v_11],
+    [12, v_12],
+    [13, v_13],
+    [14, v_14],
+    [15, v_15],
+    [16, v_16],
+    [17, v_17],
+    [18, v_18],
+    [19, v_19],
+    [20, v_20],
+    [21, v_21],
+    [22, v_22],
+    [23, v_23],
+    [24, v_24],
+    [25, v_25]
+]
+
+# Contabiliza os números
+freq_nr
+freq_nr.sort(key=lambda tup: tup[1]) # Ordenação dos resultados
+freq_nr[0]  # Número menos sorteado
+freq_nr[-1]  # Número mais sorteado
+
+# Contabiliza as combinações
+counter = collections.Counter(comb)
+resultado = pd.DataFrame(counter.items(), columns=['Combinacao', 'Frequencia'])
+resultado['p_freq'] = resultado['Frequencia']/resultado['Frequencia'].sum()
+resultado = resultado.sort_values(by='p_freq')
+
+# Apresenta os resultados
+print('''
+O número mais frequente é o:  {}
+O número menos frequente é o:  {}
+A combinação de Pares, Ímpares e Primos mais frequente é: {} com a frequencia de: {}%
+'''.format(freq_nr[-1][0], freq_nr[0][0], resultado['Combinacao'].values[-1], int((resultado['p_freq'].values[-1]*100)*100)/100)
+)
