@@ -1,5 +1,5 @@
 # Objetivo
-# O objetivo deste estudo é abordar conceitos de coleta de dados, análisar informações e explorar os resultados do soterio Lotofácil da Caixa Econômica Federal.
+# O objetivo deste estudo é criar um script para abordar conceitos de coleta de dados, análisar informações e explorar os resultados do soterio Lotofácil da Caixa Econômica Federal.
 
 # Imports
 import requests
