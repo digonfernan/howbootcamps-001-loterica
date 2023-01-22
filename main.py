@@ -9,7 +9,7 @@ import sys
 
 # Request da URL
 url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/resultados?modalidade=Lotof%C3%A1cil'
-#url = sys.argv[1]
+url = sys.argv[1]
 # Cria variável de reposta
 r = requests.get(url, verify=False)
 r # Verifica a resposta
